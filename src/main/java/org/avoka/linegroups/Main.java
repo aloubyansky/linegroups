@@ -36,16 +36,16 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        // final LineGroup core = readGroup("standalone-core.xml");
-        // final LineGroup servlet = readGroup("standalone-servlet.xml");
-        // final LineGroup servletElytron = readGroup("standalone-servlet-elytron.xml");
+        final LineGroup core = readGroup("standalone-core.xml");
+        final LineGroup servlet = readGroup("standalone-servlet.xml");
+        final LineGroup servletElytron = readGroup("standalone-servlet-elytron.xml");
         // final LineGroup servletLoadBalancer = readGroup("standalone-servlet-load-balancer.xml");
-        final LineGroup standalone = readGroup("standalone.xml");
-        final LineGroup standaloneFull = readGroup("standalone-full.xml");
+        //final LineGroup standalone = readGroup("standalone.xml");
+        //final LineGroup standaloneFull = readGroup("standalone-full.xml");
         // final LineGroup standaloneHa = readGroup("standalone-ha.xml");
         // final LineGroup standaloneFullHa = readGroup("standalone-full-ha.xml");
 
-        for (LineGroup g : Util.arrange(standaloneFull, standalone)) {
+        for (LineGroup g : Util.arrange(servletElytron, servlet, core)) {
             System.out.println();
             System.out.println("GROUP " + g.getName());
             if (g.hasNestedGroups()) {

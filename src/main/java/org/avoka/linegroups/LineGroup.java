@@ -18,10 +18,7 @@ package org.avoka.linegroups;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -34,7 +31,7 @@ public class LineGroup {
 
         private String name;
         private Set<String> lines = Collections.emptySet();
-        private Map<String, LineGroup> nestedGroups = Collections.emptyMap();
+        private Set<String> nestedGroups = Collections.emptySet();
 
         private Builder(String name) {
             this.name = name;
@@ -51,10 +48,10 @@ public class LineGroup {
             }
             if (group.hasNestedGroups()) {
                 if (group.nestedGroups.size() == 1) {
-                    final Entry<String, LineGroup> entry = group.nestedGroups.entrySet().iterator().next();
-                    nestedGroups = Collections.singletonMap(entry.getKey(), entry.getValue());
+                    final String nestedName = group.nestedGroups.iterator().next();
+                    nestedGroups = Collections.singleton(nestedName);
                 } else {
-                    nestedGroups = new HashMap<>(group.nestedGroups);
+                    nestedGroups = new HashSet<>(group.nestedGroups);
                 }
             }
         }
@@ -96,15 +93,15 @@ public class LineGroup {
             return lines.size();
         }
 
-        public Builder nestGroup(LineGroup nested) {
+        public Builder nestGroup(String nested) {
             switch (nestedGroups.size()) {
                 case 0:
-                    nestedGroups = Collections.singletonMap(nested.getName(), nested);
+                    nestedGroups = Collections.singleton(nested);
                     break;
                 case 1:
-                    nestedGroups = new HashMap<>(nestedGroups);
+                    nestedGroups = new HashSet<>(nestedGroups);
                 default:
-                    nestedGroups.put(nested.getName(), nested);
+                    nestedGroups.add(nested);
             }
             return this;
         }
@@ -123,13 +120,13 @@ public class LineGroup {
     }
 
     private final String name;
-    private final Map<String, LineGroup> nestedGroups;
+    private final Set<String> nestedGroups;
     private final Set<String> lines;
 
     private LineGroup(Builder builder) {
         this.name = builder.name;
         this.lines = Collections.unmodifiableSet(builder.lines);
-        this.nestedGroups = Collections.unmodifiableMap(builder.nestedGroups);
+        this.nestedGroups = Collections.unmodifiableSet(builder.nestedGroups);
     }
 
     public String getName() {
@@ -149,11 +146,7 @@ public class LineGroup {
     }
 
     public Set<String> getNestedGroupNames() {
-        return nestedGroups.keySet();
-    }
-
-    public LineGroup getNestedGroup(String name) {
-        return nestedGroups.get(name);
+        return nestedGroups;
     }
 
     @Override
@@ -200,7 +193,7 @@ public class LineGroup {
             buf.append("\n").append(line);
         }
         if (!nestedGroups.isEmpty()) {
-            final String[] arr = nestedGroups.keySet().toArray(new String[nestedGroups.size()]);
+            final String[] arr = nestedGroups.toArray(new String[nestedGroups.size()]);
             Arrays.sort(arr);
             buf.append("\n").append("groups=").append(Arrays.asList(arr));
         }

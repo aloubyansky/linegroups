@@ -16,6 +16,7 @@
  */
 package org.avoka.linegroups;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -77,6 +78,26 @@ public class Util {
 
     public static Collection<LineGroup> arrange(LineGroup... groups) {
 
+        // order by line numbers
+        Arrays.sort(groups, (o1, o2) -> o2.getLines().size() - o1.getLines().size());
+
+        // check whether there are original groups that are fully included
+        for(int i = 0; i < groups.length - 1; ++i) {
+            LineGroup bigGroup = groups[i];
+            for (int j = i + 1; j < groups.length; ++j) {
+                LineGroup smallGroup = groups[j];
+                if (bigGroup.getLines().containsAll(smallGroup.getLines())) {
+                    final LineGroup.Builder bigBuilder = LineGroup.builder(bigGroup);
+                    for(String extractedLine : smallGroup.getLines()) {
+                        bigBuilder.removeLine(extractedLine);
+                    }
+                    bigBuilder.nestGroup(smallGroup.getName());
+                    bigGroup = bigBuilder.build();
+                    groups[i] = bigGroup;
+                }
+            }
+        }
+
         final LinesInGroups linesInGroups = new LinesInGroups();
         final Map<String, LineGroup> lineGroups = new HashMap<>(groups.length);
         for (LineGroup group : groups) {
@@ -106,6 +127,7 @@ public class Util {
                     processedLines.add(line);
                     groupNames = linesInGroups.getGroupNames(line);
                     if (groupNames.size() > 1) {
+                        groupNames = new HashSet<>(groupNames);
                         for (String otherLine : group.getLines()) {
                             if (processedLines.contains(otherLine)) {
                                 continue;
@@ -157,7 +179,7 @@ public class Util {
                 }
 
                 for (LineGroup.Builder rebuilder : rebuilders.values()) {
-                    rebuilder.nestGroup(newGroup);
+                    rebuilder.nestGroup(newGroup.getName());
                     final LineGroup group = rebuilder.build();
                     lineGroups.put(group.getName(), group);
                 }
