@@ -76,7 +76,7 @@ public class Util {
         }
     }
 
-    public static Collection<LineGroup> arrange(LineGroup... groups) {
+    public static Map<String, LineGroup> arrange(LineGroup... groups) {
 
         // order by line numbers
         Arrays.sort(groups, (o1, o2) -> o2.getLines().size() - o1.getLines().size());
@@ -195,7 +195,7 @@ public class Util {
                 extracted = true;
             }
         }
-        return lineGroups.values();
+        return lineGroups;
     }
 
     public static void main(String[] args) throws Exception {
@@ -207,7 +207,7 @@ public class Util {
         final LineGroup g4 = LineGroup.builder("g4").addLine("line1").addLine("line2").addLine("line3").addLine("line4")
                 .addLine("line5").addLine("line6").build();
 
-        final Collection<LineGroup> arranged = arrange(g1, g2, g3, g4);
+        final Collection<LineGroup> arranged = arrange(g1, g2, g3, g4).values();
         for (LineGroup g : arranged) {
             System.out.println(g);
             System.out.println();

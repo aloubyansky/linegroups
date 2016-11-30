@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -36,27 +37,31 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        final LineGroup core = readGroup("standalone-core.xml");
-        final LineGroup servlet = readGroup("standalone-servlet.xml");
-        final LineGroup servletElytron = readGroup("standalone-servlet-elytron.xml");
+        //final LineGroup core = readGroup("standalone-core.xml");
+        //final LineGroup servlet = readGroup("standalone-servlet.xml");
+        //final LineGroup servletElytron = readGroup("standalone-servlet-elytron.xml");
         // final LineGroup servletLoadBalancer = readGroup("standalone-servlet-load-balancer.xml");
         //final LineGroup standalone = readGroup("standalone.xml");
         //final LineGroup standaloneFull = readGroup("standalone-full.xml");
-        // final LineGroup standaloneHa = readGroup("standalone-ha.xml");
-        // final LineGroup standaloneFullHa = readGroup("standalone-full-ha.xml");
+        //final LineGroup standaloneHa = readGroup("standalone-ha.xml");
+        //final LineGroup standaloneFullHa = readGroup("standalone-full-ha.xml");
 
-        for (LineGroup g : Util.arrange(servletElytron, servlet, core)) {
+        final Map<String, LineGroup> groups = Util.arrange(
+                readGroup("standalone-minimalistic.xml"),
+                readGroup("standalone-core.xml"),
+                readGroup("standalone-servlet.xml"),
+                readGroup("standalone-servlet-load-balancer.xml")
+                );
+        for (LineGroup g : groups.values()) {
             System.out.println();
             System.out.println("GROUP " + g.getName());
             if (g.hasNestedGroups()) {
-                final StringBuilder buf = new StringBuilder(" Includes: ");
+                System.out.println("  Includes:");
                 final String[] arr = g.getNestedGroupNames().toArray(new String[g.getNestedGroupNames().size()]);
                 Arrays.sort(arr);
-                buf.append(arr[0]);
-                for (int i = 1; i < arr.length; ++i) {
-                    buf.append(", ").append(arr[i]);
+                for(String nestedGroup : arr) {
+                    logNestedGroups(nestedGroup, groups, 4);
                 }
-                System.out.println(buf.toString());
             }
             if (g.size() > 0) {
                 System.out.println(" Lines:");
@@ -65,6 +70,21 @@ public class Main {
                 for (String line : arr) {
                     System.out.println("  " + toCliLine(ModelNode.fromJSONString(line)));
                 }
+            }
+        }
+    }
+
+    private static void logNestedGroups(String groupName, Map<String, LineGroup> groups, int offset) {
+        final StringBuilder buf = new StringBuilder();
+        for(int i = 0; i < offset; ++i) {
+            buf.append(' ');
+        }
+        buf.append(groupName);
+        System.out.println(buf.toString());
+        final LineGroup lineGroup = groups.get(groupName);
+        if(lineGroup.hasNestedGroups()) {
+            for(String nestedGroup : lineGroup.getNestedGroupNames()) {
+                logNestedGroups(nestedGroup, groups, offset + 2);
             }
         }
     }
